@@ -1,5 +1,9 @@
 > **Markdown help:** See [markdown-guide.md](../pages/markdown-guide.md) for formatting tips and a reflection template.
-
 # Week 2 Reflection
-
-Reflect 2: Can AI help us define what it means to be human, or does it reduce us to patterns?
+AI can help us define what it means to be human, but only if we treat its patterns as a mirror rather than a final answer. AI is good at recognizing patterns in language, behavior, and culture, which can reveal our fears, values, contradictions, and ways of making meaning. However, humans are more than their patterns because we can recognize them, challenge them, change them, and make choices that surprise even ourselves. AI may help describe how humans tend to be, but the question of what we should become is still ours to answer. Work generated entirely by AI tends to consist of patterns and consistencies, while work that only uses AI as a helper keeps the human in control.
+## Where I felt in control
+I felt in control today when I actually did the work of installing the tools and working through my professor's instructions myself, rather than having second thoughts about using AI to complete the tutorial. It made my skills feel more authentic and transparent, using my own hands instead of everything being automated at the same time.
+## Tools and AI use
+- Tools used: GitHub Desktop, Antigravity (VS Code-based editor), Perplexity
+- What the AI suggested: Perplexity walked me through the tutorial steps, gave me feedback on my draft, fixed typos, and merged my last two sentences into one. The editor did not suggest any text in this reflection.
+- What I accepted or rejected: I wrote the ideas and the first draft myself and accepted the grammar cleanup and the shortened final sentence.
