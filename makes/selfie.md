@@ -19,7 +19,7 @@ The longer I looked, the less I saw myself. My headphones are gone. My chain is 
 That is the part that stuck with me. The parts of the image that are me are the parts I gave it. The parts it added are all assumptions about what a young man should look like when he wants to be taken seriously. Nobody asked for the suit. For the remix, I put my original photo next to the headshot and labeled every change the AI made on its own. I wanted to make the assumptions visible, because the things it decided were not worth keeping are the things that actually make the photo mine.
 
 ## Attribution & AI Use
-- Tools used: Canva AI (image generation), Canva editor (remix and labels), Perplexity (drafted the reflection from my notes and observations, and helped organize the files in my repo)
+- Tools used: Canva AI (image generation), Canva editor (remix and labels)
 - AI prompts (summary): Uploaded a real photo of myself and prompted "make this photo look like a very professional and realistic headshot of me."
 - What AI generated: A studio headshot with a dark suit, white collared shirt, gray background, smoothed skin, and a neutral expression. It removed my headphones and chain but kept my hair and face shape.
 - What you changed or decided: I chose the photo and the prompt, decided the suit and setting were the AI's assumptions rather than mine, and built the side-by-side remix labeling each change. I described what I noticed and Perplexity turned it into a draft, which I edited.
