@@ -34,7 +34,7 @@ The roles ended up clear. The AI is a fast illustrator who has never been on the
 
 Details:
 
-- **Tools used:** Perplexity Computer (GPT Image 2.5 for images, Python/Pillow for layout). Fonts: Comic Neue, Bangers and Kalam.
+- **Tools used:** GPT Image 2.5 (images), Python/Pillow (layout and lettering). Fonts: Comic Neue, Bangers and Kalam.
 - **AI prompts (summary):** Panel 2: "Draw me as a hockey goalie making a save." with no other instructions. Panel 6: the view from inside a goalie mask at 6:30 a.m. practice, empty bleachers, one shooter at the top of the circle, glove and blocker at the bottom of the frame. Panels 1, 3 and 5: a comic-style drawing of me at my desk in my room (curly light-brown hair, over-ear headphones, white t-shirt, gold chain, dark green wall), with my pads and mask next to the desk in panel 5.
 - **What AI generated:** All six panel images, the layout and lettering, and the first draft of every caption, speech bubble, markup label and the text on this page.
 - **What I changed or decided:** The story concept and point of view, showing the first AI image as-is, which assumptions get circled in panel 4, what the second prompt asks for, and final approval of all text. The full log is in [pages/ai-log/2026-09-23-make3-comic.md](../pages/ai-log/2026-09-23-make3-comic.md).
