@@ -28,7 +28,7 @@ That is why authorship gets messy. The model remixed other people's homes and ot
 
 ## Attribution & AI Use
 
-- **Tools used:** Perplexity Computer with GPT Image 2.5 (the six dog images); Python/Pillow (resizing, the prompt card, the "try N of 6" counter, red circles and labels, caption, and GIF assembly). Perplexity turned my notes and decisions into a first draft of the text on this page, which I edited.
+- **Tools used:**GPT Image 2.5 (the six dog images); Python/Pillow (resizing, the prompt card, the "try N of 6" counter, red circles and labels, caption, and GIF assembly). Perplexity turned my notes and decisions into a first draft of the text on this page, which I edited.
 - **AI prompts (if any):** "A golden retriever dancing in a living room." with no other instructions, sent six times on September 30, 2026.
 - **What the AI generated:** All six photographs. Every one is a photorealistic golden retriever standing on its hind legs in the center of a bright living room, one paw raised, tongue out, with a gray couch and geometric pillows, a cream patterned rug, a wood shelf with a trailing plant, and either a "Good Vibes Only" sign (tries 1, 2 and 6) or a mountain picture (tries 3, 4 and 5) on the wall. The model chose the portrait format on its own.
 - **What you changed, edited, or remixed:** I did not alter any output. I chose to run the same prompt repeatedly, to keep every result, and to loop them in an order I picked. I set the timing (1.2 s prompt card, 0.4 s per output, 2.2 s hold), added the counter, chose the four things to circle on the last frame and what to call them, wrote the caption, and picked the title.
