@@ -1,0 +1,606 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>The Cloud Has a Body – a counter-map of AI's infrastructure</title>
+<meta name="description" content="A map of 35 places where AI is mined, powered, cooled and cleaned: cobalt and lithium mines, data centres and the offices where people label data and moderate content. Make 6 for DH 101, Denison University.">
+<link rel="preconnect" href="https://api.fontshare.com">
+<link rel="stylesheet" href="https://api.fontshare.com/v2/css?f[]=zodiak@400,700&f[]=satoshi@400,500,700&display=swap">
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
+<link rel="stylesheet" href="https://unpkg.com/maplibre-gl@4.7.1/dist/maplibre-gl.css">
+<style>
+  :root {
+    --paper: #f6f3ee;
+    --paper-2: #ece7df;
+    --ink: #1d1a16;
+    --ink-2: #4a443c;
+    --ink-3: #7a7369;
+    --rule: #d9d2c7;
+    --accent: #1d1a16;
+    --mining: #b4451f;
+    --datacenter: #2a6f97;
+    --labor: #8d2f5b;
+    --hq: #2b2b2b;
+    --hq-fill: #f6f3ee;
+    --line: #2b2b2b;
+    --focus: #1d6fd1;
+    --shadow: 0 1px 2px rgba(29,26,22,.08), 0 8px 24px rgba(29,26,22,.10);
+    --font-display: "Zodiak", Georgia, "Times New Roman", serif;
+    --font-ui: "Satoshi", system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  }
+  [data-theme="dark"] {
+    --paper: #1b1917;
+    --paper-2: #26231f;
+    --ink: #efe9df;
+    --ink-2: #c9c1b4;
+    --ink-3: #948b7e;
+    --rule: #3a352f;
+    --accent: #efe9df;
+    --mining: #e0693d;
+    --datacenter: #5aa0c8;
+    --labor: #c7598d;
+    --hq: #efe9df;
+    --hq-fill: #1b1917;
+    --line: #efe9df;
+    --focus: #7fb4ff;
+    --shadow: 0 1px 2px rgba(0,0,0,.4), 0 8px 24px rgba(0,0,0,.45);
+  }
+  * { box-sizing: border-box; }
+  html, body { height: 100%; margin: 0; }
+  body {
+    font-family: var(--font-ui);
+    color: var(--ink);
+    background: var(--paper);
+    font-size: 15px;
+    line-height: 1.5;
+    -webkit-font-smoothing: antialiased;
+  }
+  .app { position: relative; height: 100%; display: flex; }
+  #map { flex: 1 1 auto; height: 100%; min-width: 0; background: #e9e5de; z-index: 0; }
+  [data-theme="dark"] #map { background: #141311; }
+
+  /* ---------- panel ---------- */
+  .panel {
+    flex: 0 0 360px;
+    width: 360px;
+    height: 100%;
+    overflow-y: auto;
+    overscroll-behavior: contain;
+    background: var(--paper);
+    border-right: 1px solid var(--rule);
+    padding: 20px 22px 28px;
+    z-index: 2;
+  }
+  .panel h1 {
+    font-family: var(--font-display);
+    font-weight: 700;
+    font-size: 30px;
+    line-height: 1.05;
+    letter-spacing: -0.01em;
+    margin: 4px 0 8px;
+    text-wrap: balance;
+  }
+  .kicker {
+    font-size: 11px; letter-spacing: .14em; text-transform: uppercase; color: var(--ink-3); font-weight: 700;
+    display: flex; justify-content: space-between; align-items: center; gap: 8px;
+  }
+  .lede { font-size: 15px; color: var(--ink-2); margin: 0 0 16px; }
+  .lede strong { color: var(--ink); font-weight: 700; }
+  .section { border-top: 1px solid var(--rule); padding-top: 14px; margin-top: 14px; }
+  .label { font-size: 11px; letter-spacing: .12em; text-transform: uppercase; color: var(--ink-3); font-weight: 700; margin: 0 0 8px; }
+
+  .views { display: grid; grid-template-columns: 1fr; gap: 6px; }
+  .view-btn {
+    font: inherit; font-weight: 500; text-align: left; cursor: pointer;
+    background: var(--paper); color: var(--ink); border: 1px solid var(--rule); border-radius: 8px;
+    padding: 9px 12px; display: flex; flex-direction: column; gap: 1px;
+    transition: background .15s ease, border-color .15s ease;
+  }
+  .view-btn small { color: var(--ink-3); font-weight: 400; font-size: 12.5px; }
+  .view-btn .short { display: none; }
+  .view-btn:hover { border-color: var(--ink-3); }
+  .view-btn[aria-pressed="true"] { background: var(--ink); color: var(--paper); border-color: var(--ink); }
+  .view-btn[aria-pressed="true"] small { color: var(--paper); opacity: .78; }
+  .view-note { font-size: 13px; color: var(--ink-2); margin: 10px 0 0; min-height: 3.2em; }
+
+  .layers { list-style: none; margin: 0; padding: 0; display: grid; gap: 6px; }
+  .layers label { display: flex; align-items: center; gap: 10px; cursor: pointer; font-weight: 500; }
+  .layers input { width: 16px; height: 16px; margin: 0; accent-color: var(--ink); flex: 0 0 auto; }
+  .swatch { width: 12px; height: 12px; flex: 0 0 auto; display: inline-block; }
+  .swatch.mining { background: var(--mining); transform: rotate(45deg); width: 10px; height: 10px; margin: 0 1px; }
+  .swatch.datacenter { background: var(--datacenter); border-radius: 50%; }
+  .swatch.labor { background: var(--labor); }
+  .swatch.hq { border: 2px solid var(--hq); border-radius: 50%; background: var(--hq-fill); }
+  .swatch.line { height: 0; border-top: 2px dashed var(--line); width: 14px; }
+  .count { margin-left: auto; color: var(--ink-3); font-variant-numeric: tabular-nums; font-size: 13px; }
+
+  .stats { font-size: 13px; color: var(--ink-2); margin: 10px 0 0; }
+  .stats b { color: var(--ink); font-weight: 700; }
+
+  details { border-top: 1px solid var(--rule); margin-top: 14px; padding-top: 10px; }
+  summary {
+    cursor: pointer; font-weight: 700; font-size: 14px; list-style: none; display: flex; align-items: center; gap: 8px;
+    padding: 4px 0;
+  }
+  summary::-webkit-details-marker { display: none; }
+  summary::before { content: ""; width: 7px; height: 7px; border-right: 1.5px solid var(--ink); border-bottom: 1.5px solid var(--ink); transform: rotate(-45deg); transition: transform .15s ease; margin-left: 2px; }
+  details[open] summary::before { transform: rotate(45deg); }
+  details p, details li { font-size: 13.5px; color: var(--ink-2); }
+  details ul { padding-left: 18px; margin: 6px 0; }
+  details li { margin: 4px 0; }
+
+  .place-list { list-style: none; margin: 6px 0 0; padding: 0; }
+  .place-list h3 { font-size: 11px; letter-spacing: .12em; text-transform: uppercase; color: var(--ink-3); margin: 12px 0 4px; display: flex; align-items: center; gap: 8px; }
+  .place-list button {
+    font: inherit; font-size: 13.5px; color: var(--ink); background: none; border: 0; padding: 4px 2px; cursor: pointer; text-align: left; width: 100%;
+    border-radius: 4px; display: flex; justify-content: space-between; gap: 8px;
+  }
+  .place-list button span:last-child { color: var(--ink-3); font-size: 12px; white-space: nowrap; }
+  .place-list button:hover { background: var(--paper-2); }
+
+  .foot { font-size: 12.5px; color: var(--ink-3); margin-top: 18px; border-top: 1px solid var(--rule); padding-top: 12px; }
+  .foot a, .lede a, details a { color: inherit; text-underline-offset: 2px; }
+
+  .icon-btn {
+    font: inherit; font-size: 12px; font-weight: 700; letter-spacing: .04em; cursor: pointer;
+    background: none; color: var(--ink-2); border: 1px solid var(--rule); border-radius: 999px; padding: 3px 10px;
+  }
+  .icon-btn:hover { border-color: var(--ink-3); color: var(--ink); }
+
+  :focus-visible { outline: 2px solid var(--focus); outline-offset: 2px; }
+  .leaflet-container :focus { outline: 2px solid var(--focus); outline-offset: 2px; }
+
+  /* ---------- markers ---------- */
+  .pin { display: block; }
+  .pin svg { display: block; overflow: visible; }
+  .pin .shape { stroke: var(--paper); stroke-width: 1.5; paint-order: stroke; }
+  .pin.mining .shape { fill: var(--mining); }
+  .pin.datacenter .shape { fill: var(--datacenter); }
+  .pin.labor .shape { fill: var(--labor); }
+  .pin.hq .shape { fill: var(--hq-fill); stroke: var(--hq); stroke-width: 2; }
+  .pin.hq .dot { fill: var(--hq); }
+  .pin.dim { opacity: .55; }
+  .leaflet-marker-icon.pin { background: none; border: 0; }
+  .leaflet-marker-icon.pin:hover .shape, .leaflet-marker-icon.pin:focus .shape { filter: brightness(1.15); }
+  .hq-label { background: none; border: 0; box-shadow: none; font: 700 11px/1 var(--font-ui); color: var(--ink); letter-spacing: .02em; padding: 0; white-space: nowrap; }
+  .hq-label::before { display: none; }
+  .leaflet-tooltip.hq-label { text-shadow: 0 0 3px var(--paper), 0 0 3px var(--paper), 0 0 3px var(--paper); }
+
+  /* ---------- popups ---------- */
+  .leaflet-popup-content-wrapper {
+    background: var(--paper); color: var(--ink); border-radius: 10px; box-shadow: var(--shadow);
+    font-family: var(--font-ui);
+  }
+  .leaflet-popup-tip { background: var(--paper); }
+  .leaflet-popup-content { margin: 16px 18px 14px; line-height: 1.45; font-size: 13.5px; max-height: min(62vh, 520px); overflow-y: auto; overscroll-behavior: contain; padding-right: 4px; }
+  .leaflet-popup-close-button { color: var(--ink-3) !important; font-size: 20px !important; padding: 6px 8px 0 0 !important; }
+  .pop .chip { display: inline-block; font-size: 10.5px; letter-spacing: .12em; text-transform: uppercase; font-weight: 700; color: #fff; padding: 2px 7px; border-radius: 3px; }
+  .pop .chip.mining { background: var(--mining); }
+  .pop .chip.datacenter { background: var(--datacenter); }
+  .pop .chip.labor { background: var(--labor); }
+  .pop .chip.hq { background: var(--hq); color: var(--hq-fill); }
+  .pop h2 { font-family: var(--font-display); font-size: 19px; line-height: 1.15; margin: 8px 0 2px; font-weight: 700; }
+  .pop .place { color: var(--ink-3); font-size: 12.5px; margin: 0 0 10px; }
+  .pop h3 { font-size: 10.5px; letter-spacing: .12em; text-transform: uppercase; color: var(--ink-3); margin: 10px 0 2px; }
+  .pop p { margin: 0 0 4px; color: var(--ink-2); }
+  .pop .num { display: flex; align-items: baseline; gap: 10px; margin: 2px 0 6px; padding: 8px 10px; background: var(--paper-2); border-radius: 6px; }
+  .pop .num b { font-family: var(--font-display); font-size: 24px; line-height: 1; color: var(--ink); white-space: nowrap; }
+  .pop .num span { font-size: 12px; color: var(--ink-2); }
+  .pop .link { font-size: 12.5px; color: var(--ink-2); border-left: 2px solid var(--rule); padding-left: 8px; margin-top: 8px; }
+  .pop .link b { color: var(--ink); }
+  .pop ul { margin: 4px 0 0; padding-left: 16px; }
+  .pop li { font-size: 12px; margin: 2px 0; }
+  .pop a { color: var(--ink); text-underline-offset: 2px; }
+  .leaflet-popup-content a:focus-visible { outline: 2px solid var(--focus); }
+
+  .leaflet-control-attribution { background: color-mix(in srgb, var(--paper) 85%, transparent) !important; color: var(--ink-3) !important; font-family: var(--font-ui); font-size: 10.5px !important; }
+  .leaflet-gl-layer, .maplibregl-map { pointer-events: none; }
+  .maplibregl-ctrl-attrib, .maplibregl-ctrl-bottom-right, .maplibregl-ctrl-bottom-left { display: none !important; }
+  .leaflet-control-attribution a { color: var(--ink-2) !important; }
+  .leaflet-bar a { background: var(--paper) !important; color: var(--ink) !important; border-color: var(--rule) !important; }
+  .leaflet-bar { border: 1px solid var(--rule) !important; box-shadow: var(--shadow) !important; }
+
+  /* ---------- mobile ---------- */
+  .panel-toggle { display: none; }
+  @media (max-width: 1000px) {
+    .app { flex-direction: column; }
+    #map { flex: 1 1 auto; height: auto; }
+    .panel {
+      flex: 0 0 auto; width: 100%; height: auto; max-height: 52vh;
+      border-right: 0; border-top: 1px solid var(--rule);
+      padding: 12px 16px 20px;
+      transition: max-height .2s ease;
+    }
+    .panel.collapsed { max-height: none; overflow: visible; padding-bottom: 12px; }
+    .panel.collapsed .lede, .panel.collapsed .section:not(.section-views), .panel.collapsed details, .panel.collapsed .foot, .panel.collapsed .view-note { display: none; }
+    .panel.collapsed .section-views { border-top: 0; padding-top: 0; margin-top: 8px; }
+    .panel.collapsed .label { display: none; }
+    .panel h1 { margin-bottom: 4px; }
+    .panel h1 { font-size: 22px; }
+    .panel-toggle {
+      display: inline-block; font: inherit; font-size: 12px; font-weight: 700; cursor: pointer;
+      background: var(--ink); color: var(--paper); border: 0; border-radius: 999px; padding: 4px 11px;
+    }
+    .views { grid-template-columns: 1fr 1fr 1fr; }
+    .view-btn small { display: none; }
+    .view-btn .long { display: none; }
+    .view-btn .short { display: inline; }
+    .view-btn { padding: 8px 8px; font-size: 13px; }
+    .view-note { min-height: 0; }
+    .leaflet-popup-content { margin: 14px 14px 12px; max-height: min(50vh, 420px); }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    * { transition: none !important; }
+  }
+</style>
+</head>
+<body>
+<div class="app">
+  <aside class="panel" id="panel" aria-label="Map controls and argument">
+    <div class="kicker">
+      <span>Make 6 · DH 101 · Counter-map</span>
+      <span style="display:flex;gap:6px">
+        <button class="panel-toggle" id="panelToggle" aria-expanded="true" aria-controls="panelBody">Less</button>
+        <button class="icon-btn" id="themeBtn" aria-pressed="false" title="Switch between light and dark map">Dark</button>
+      </span>
+    </div>
+    <h1>The Cloud Has a Body</h1>
+    <div id="panelBody">
+      <p class="lede">The AI industry draws itself as five campuses and a weightless cloud. <strong>This map follows the bill.</strong> Decisions and profits sit at a handful of addresses in California and Washington; the mines, the water, the electricity and the people who label and clean the data sit almost everywhere else.</p>
+
+      <div class="section section-views">
+        <p class="label">Choose a view</p>
+        <div class="views" role="group" aria-label="Map views">
+          <button class="view-btn" data-view="industry" aria-pressed="false"><span class="long">How the industry maps AI</span><span class="short">Industry map</span><small>Headquarters and "the cloud"</small></button>
+          <button class="view-btn" data-view="counter" aria-pressed="true">Counter-map<small>Mines, water, power and labour, with the money lines</small></button>
+          <button class="view-btn" data-view="all" aria-pressed="false">Everything<small>All four layers, equal weight</small></button>
+        </div>
+        <p class="view-note" id="viewNote"></p>
+      </div>
+
+      <div class="section">
+        <p class="label">Layers</p>
+        <ul class="layers">
+          <li><label><input type="checkbox" data-layer="mining" checked><span class="swatch mining" aria-hidden="true"></span>Mines and salt flats<span class="count" id="count-mining"></span></label></li>
+          <li><label><input type="checkbox" data-layer="datacenter" checked><span class="swatch datacenter" aria-hidden="true"></span>Data centres (power and water)<span class="count" id="count-datacenter"></span></label></li>
+          <li><label><input type="checkbox" data-layer="labor" checked><span class="swatch labor" aria-hidden="true"></span>Labelling and moderation labour<span class="count" id="count-labor"></span></label></li>
+          <li><label><input type="checkbox" data-layer="hq" checked><span class="swatch hq" aria-hidden="true"></span>Headquarters (reference)<span class="count" id="count-hq"></span></label></li>
+          <li><label><input type="checkbox" data-layer="lines" checked><span class="swatch line" aria-hidden="true"></span>Money lines: who holds the contract<span class="count" id="count-lines"></span></label></li>
+        </ul>
+        <p class="stats" id="stats"></p>
+      </div>
+
+      <details>
+        <summary>Why most mines have no line</summary>
+        <p>A line connects a place to one of the five headquarters only when the sources on that pin name the company. Data centres and labelling offices usually do: a contract, a permit, a payslip. The mines almost never do. Cobalt, lithium and rare earths pass through refineries, cathode makers and chip packagers, mostly in China, before any of the five companies touch them. That gap in the data is not an accident; it is what lets a company say it does not know where its materials come from.</p>
+      </details>
+
+      <details>
+        <summary>What is missing from this map</summary>
+        <ul>
+          <li><b>Undersea cables and chip fabs.</b> No fibre routes, no TSMC in Taiwan, no ASML in the Netherlands. The map would need two more layers and another week.</li>
+          <li><b>The end of the chain.</b> E-waste sites like Agbogbloshie in Accra, where servers go to die, are not here.</li>
+          <li><b>People with no address.</b> Crowd labellers work from kitchens and phones. Venezuela and Nigeria get one pin each for a whole country.</li>
+          <li><b>Exact coordinates.</b> Pins sit at the published centre of a town, salt flat or mining district, not at a gate. Companies do not publish facility locations; some fought to keep them secret.</li>
+          <li><b>Names.</b> Most moderators and labellers are under NDAs. The sources that quote them use first names or none.</li>
+          <li><b>Water and power numbers for most sites.</b> The Dalles' figures took a 13-month public-records fight. Querétaro's officials declined to say. Most sites never had to say at all.</li>
+          <li><b>The projection.</b> Web Mercator makes Iceland look larger than it is and the Congo smaller. The map's shape has a point of view before any pin is placed.</li>
+        </ul>
+      </details>
+
+      <details id="browse">
+        <summary>Browse all places (keyboard friendly)</summary>
+        <div class="place-list" id="placeList" role="list"></div>
+      </details>
+
+      <p class="foot">Pins at published place centres, not facility gates. Every number comes from the sources listed on its pin. Data and write-up: <a href="week07.html">Make 6 page</a> · <a href="../assets/data/ai-infrastructure-sites.csv">CSV</a> · <a href="../assets/data/ai-infrastructure-sites.geojson">GeoJSON</a>. Basemap © <a href="https://www.openstreetmap.org/copyright" rel="noopener">OpenStreetMap</a> contributors © <a href="https://carto.com/attributions" rel="noopener">CARTO</a>. Built with <a href="https://leafletjs.com" rel="noopener">Leaflet</a>.</p>
+    </div>
+  </aside>
+  <div id="map" role="region" aria-label="Interactive map of AI infrastructure sites"></div>
+</div>
+
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<script src="https://unpkg.com/maplibre-gl@4.7.1/dist/maplibre-gl.js"></script>
+<script src="https://unpkg.com/@maplibre/maplibre-gl-leaflet@0.0.22/leaflet-maplibre-gl.js"></script>
+<script src="../assets/data/ai-infrastructure-sites.js"></script>
+<script>
+(function () {
+  var SITES = window.AI_SITES || [];
+  var LAYER_NAMES = { mining: "Mines and salt flats", datacenter: "Data centres", labor: "Labelling and moderation labour", hq: "Headquarters" };
+  var LINK_NAMES = { direct: "Direct AI link", hardware: "Hardware link", platform: "Platform link" };
+  // Documented company links (the pin's sources name the company). No line = the sources name no company on this map.
+  var FLOWS = {
+    iowa: ["microsoft", "openai"], dalles: ["google"], abilene: ["openai", "microsoft"], newcarlisle: ["anthropic"],
+    middenmeer: ["google", "microsoft"], zeewolde: ["meta"], johor: ["google", "microsoft"], canelones: ["google"],
+    queretaro: ["microsoft"], manila: ["meta"], nairobi: ["openai", "meta"], hyderabad: ["meta"],
+    kampala: ["google", "microsoft", "meta"], accra: ["meta"]
+  };
+  var byId = {}; SITES.forEach(function (s) { byId[s.id] = s; });
+
+  var reduceMotion = window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+  var root = document.documentElement;
+  var prefersDark = window.matchMedia && window.matchMedia("(prefers-color-scheme: dark)").matches;
+  var theme = (function(){ try { return localStorage.getItem("make6-theme") || (prefersDark ? "dark" : "light"); } catch (e) { return prefersDark ? "dark" : "light"; } })();
+
+  /* ---------- map ---------- */
+  var map = L.map("map", { zoomSnap: 0.5, minZoom: window.innerWidth < 600 ? 1 : 1.5, maxZoom: 12, worldCopyJump: true, zoomControl: true, attributionControl: true });
+  map.attributionControl.setPrefix('<a href="https://leafletjs.com" rel="noopener">Leaflet</a>');
+  /* Basemap: OpenFreeMap vector tiles (no API key) through MapLibre GL; Esri's gray canvas raster tiles if WebGL or the vector tiles are unavailable. */
+  var OFM_ATTR = '<a href="https://openfreemap.org" rel="noopener">OpenFreeMap</a> &copy; <a href="https://www.openmaptiles.org/" rel="noopener">OpenMapTiles</a>, data &copy; <a href="https://www.openstreetmap.org/copyright" rel="noopener">OpenStreetMap</a> contributors';
+  var ESRI_ATTR = 'Tiles &copy; <a href="https://www.esri.com/" rel="noopener">Esri</a> &mdash; Esri, DeLorme, NAVTEQ';
+  function webglOK() { try { var c = document.createElement("canvas"); return !!(window.WebGLRenderingContext && (c.getContext("webgl") || c.getContext("experimental-webgl"))); } catch (e) { return false; } }
+  var useVector = !!(window.maplibregl && L.maplibreGL && webglOK());
+  function rasterLayer(t) {
+    return L.tileLayer("https://server.arcgisonline.com/ArcGIS/rest/services/Canvas/World_" + (t === "dark" ? "Dark" : "Light") + "_Gray_Base/MapServer/tile/{z}/{y}/{x}", { attribution: ESRI_ATTR, maxZoom: 16 });
+  }
+  function makeBasemap(t) {
+    if (!useVector) return rasterLayer(t);
+    var gl = L.maplibreGL({ style: "https://tiles.openfreemap.org/styles/" + (t === "dark" ? "dark" : "positron"), attribution: OFM_ATTR, interactive: false });
+    gl.on("add", function () {
+      var inner = gl.getMaplibreMap && gl.getMaplibreMap();
+      if (!inner || !inner.on) return;
+      inner.on("error", function (ev) {
+        if (!useVector || !(ev && ev.error)) return;
+        var msg = String(ev.error && ev.error.message || "");
+        if (/style|Failed to fetch|NetworkError|404|5\d\d/i.test(msg) && !inner.isStyleLoaded()) { useVector = false; applyTheme(theme); }
+      });
+    });
+    return gl;
+  }
+  var currentTiles = null;
+  function applyTheme(t) {
+    theme = t;
+    root.setAttribute("data-theme", t);
+    if (currentTiles) map.removeLayer(currentTiles);
+    currentTiles = makeBasemap(t); currentTiles.addTo(map);
+    var btn = document.getElementById("themeBtn");
+    btn.textContent = t === "dark" ? "Light" : "Dark";
+    btn.setAttribute("aria-pressed", t === "dark" ? "true" : "false");
+    try { localStorage.setItem("make6-theme", t); } catch (e) {}
+  }
+  applyTheme(theme);
+  document.getElementById("themeBtn").addEventListener("click", function () { applyTheme(theme === "dark" ? "light" : "dark"); });
+
+  var groups = { mining: L.layerGroup(), datacenter: L.layerGroup(), labor: L.layerGroup(), hq: L.layerGroup(), lines: L.layerGroup() };
+  var markers = {};
+
+  function shapeSvg(layer, size) {
+    var s = size, h = s / 2;
+    if (layer === "mining") return '<svg width="' + s + '" height="' + s + '" viewBox="0 0 ' + s + ' ' + s + '"><path class="shape" d="M' + h + ' 0 L' + s + ' ' + h + ' L' + h + ' ' + s + ' L0 ' + h + ' Z"/></svg>';
+    if (layer === "labor") return '<svg width="' + s + '" height="' + s + '" viewBox="0 0 ' + s + ' ' + s + '"><rect class="shape" x="0.75" y="0.75" width="' + (s - 1.5) + '" height="' + (s - 1.5) + '" rx="1.5"/></svg>';
+    if (layer === "hq") return '<svg width="' + s + '" height="' + s + '" viewBox="0 0 ' + s + ' ' + s + '"><circle class="shape" cx="' + h + '" cy="' + h + '" r="' + (h - 1.5) + '"/><circle class="dot" cx="' + h + '" cy="' + h + '" r="' + Math.max(1.5, s * 0.14) + '"/></svg>';
+    return '<svg width="' + s + '" height="' + s + '" viewBox="0 0 ' + s + ' ' + s + '"><circle class="shape" cx="' + h + '" cy="' + h + '" r="' + (h - 1) + '"/></svg>';
+  }
+  function makeIcon(site, size, dim) {
+    return L.divIcon({ className: "pin " + site.layer + (dim ? " dim" : ""), html: shapeSvg(site.layer, size), iconSize: [size, size], iconAnchor: [size / 2, size / 2], popupAnchor: [0, -size / 2] });
+  }
+  function popupWidth() { return Math.max(220, Math.min(340, window.innerWidth - 64)); }
+  function esc(s) { return String(s).replace(/[&<>"]/g, function (c) { return { "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]; }); }
+  function popupHtml(site) {
+    var h = '<div class="pop">';
+    h += '<span class="chip ' + site.layer + '">' + esc(LAYER_NAMES[site.layer]) + '</span>';
+    h += '<h2>' + esc(site.name) + '</h2><p class="place">' + esc(site.place) + '</p>';
+    h += '<div class="num"><b>' + esc(site.number) + '</b><span>' + esc(site.numberLabel) + '</span></div>';
+    h += '<h3>What is here</h3><p>' + esc(site.what) + '</p>';
+    h += '<h3>Who is here</h3><p>' + esc(site.who) + '</p>';
+    h += '<p class="link"><b>' + esc(LINK_NAMES[site.link] || "Link") + '.</b> ' + esc(site.linkNote) + '</p>';
+    h += '<h3>Sources</h3><ul>' + site.sources.map(function (s) { return '<li><a href="' + esc(s.url) + '" target="_blank" rel="noopener">' + esc(s.label) + '</a></li>'; }).join("") + '</ul>';
+    h += '</div>';
+    return h;
+  }
+
+  SITES.forEach(function (site) {
+    var m = L.marker([site.lat, site.lon], { icon: makeIcon(site, 14, false), title: site.name, alt: site.name + " (" + LAYER_NAMES[site.layer] + ")", riseOnHover: true, keyboard: true });
+    m.bindPopup(popupHtml(site), { maxWidth: popupWidth(), minWidth: Math.min(260, popupWidth()), autoPanPadding: [30, 30] });
+    m.bindTooltip(site.name, { direction: "top", offset: [0, -8], className: "site-tip", opacity: .95 });
+    // At world zoom some pins sit on top of each other (the two Bay Area labs, Singapore and Johor, the Andean salt flats).
+    // Clicking a crowded spot zooms in first, then opens the popup.
+    m.on("click", function () {
+      var z = map.getZoom(); if (z >= map.getMaxZoom()) return;
+      var p = map.latLngToContainerPoint(m.getLatLng()), nearest = Infinity;
+      SITES.forEach(function (o) {
+        if (o.id === site.id || !map.hasLayer(groups[o.layer])) return;
+        nearest = Math.min(nearest, p.distanceTo(map.latLngToContainerPoint(markers[o.id].getLatLng())));
+      });
+      if (nearest >= 16) return;
+      var levels = Math.ceil(Math.log(24 / Math.max(nearest, 0.01)) / Math.LN2);
+      var target = Math.min(map.getMaxZoom(), z + Math.max(1, levels));
+      m.closePopup();
+      goTo(m.getLatLng(), target, function () { m.openPopup(); });
+    });
+    markers[site.id] = m;
+    groups[site.layer].addLayer(m);
+  });
+
+  function goTo(latlng, zoom, done) {
+    var dur = reduceMotion ? 0 : 0.8;
+    if (reduceMotion) map.setView(latlng, zoom, { animate: false }); else map.flyTo(latlng, zoom, { duration: dur });
+    setTimeout(done, dur * 1000 + 80);
+  }
+
+  /* Headquarters labels (industry view only). The four Bay Area campuses share one label until the map is zoomed in enough to tell them apart. */
+  var SHORT = { openai: "OpenAI", anthropic: "Anthropic", google: "Google", meta: "Meta", microsoft: "Microsoft" };
+  function updateHqLabels() {
+    var hqs = SITES.filter(function (s) { return s.layer === "hq"; });
+    hqs.forEach(function (s) { markers[s.id].unbindTooltip(); });
+    if (currentView !== "industry") {
+      hqs.forEach(function (s) { markers[s.id].bindTooltip(s.name, { direction: "top", offset: [0, -8], opacity: .95 }); });
+      return;
+    }
+    var used = {};
+    hqs.forEach(function (s) {
+      if (used[s.id]) return;
+      var p = map.latLngToContainerPoint(markers[s.id].getLatLng()), group = [s]; used[s.id] = true;
+      hqs.forEach(function (o) {
+        if (used[o.id]) return;
+        if (p.distanceTo(map.latLngToContainerPoint(markers[o.id].getLatLng())) < 20) { group.push(o); used[o.id] = true; }
+      });
+      var label = group.map(function (g) { return SHORT[g.id] || g.name; }).join(" · ");
+      markers[s.id].bindTooltip(label, { permanent: true, direction: "left", offset: [-14, 0], className: "hq-label" });
+      group.slice(1).forEach(function (o) { markers[o.id].bindTooltip(o.name, { direction: "top", offset: [0, -8], opacity: .95 }); });
+    });
+  }
+  map.on("zoomend", updateHqLabels);
+
+  /* great-circle lines from each site to the headquarters named in its sources */
+  function toRad(d) { return d * Math.PI / 180; } function toDeg(r) { return r * 180 / Math.PI; }
+  function greatCircle(a, b, n) {
+    var lat1 = toRad(a[0]), lon1 = toRad(a[1]), lat2 = toRad(b[0]), lon2 = toRad(b[1]);
+    var d = 2 * Math.asin(Math.sqrt(Math.pow(Math.sin((lat1 - lat2) / 2), 2) + Math.cos(lat1) * Math.cos(lat2) * Math.pow(Math.sin((lon1 - lon2) / 2), 2)));
+    var pts = [];
+    for (var i = 0; i <= n; i++) {
+      var f = i / n, A = Math.sin((1 - f) * d) / Math.sin(d), B = Math.sin(f * d) / Math.sin(d);
+      var x = A * Math.cos(lat1) * Math.cos(lon1) + B * Math.cos(lat2) * Math.cos(lon2);
+      var y = A * Math.cos(lat1) * Math.sin(lon1) + B * Math.cos(lat2) * Math.sin(lon2);
+      var z = A * Math.sin(lat1) + B * Math.sin(lat2);
+      pts.push([toDeg(Math.atan2(z, Math.sqrt(x * x + y * y))), toDeg(Math.atan2(y, x))]);
+    }
+    for (var j = 1; j < pts.length; j++) { // unwrap across the antimeridian
+      var diff = pts[j][1] - pts[j - 1][1];
+      if (diff > 180) pts[j][1] -= 360; else if (diff < -180) pts[j][1] += 360;
+    }
+    return pts;
+  }
+  var lineCount = 0;
+  Object.keys(FLOWS).forEach(function (fromId) {
+    var from = byId[fromId]; if (!from) return;
+    FLOWS[fromId].forEach(function (toId) {
+      var to = byId[toId]; if (!to) return;
+      var pts = greatCircle([from.lat, from.lon], [to.lat, to.lon], 48);
+      var opts = { color: "var(--line)", weight: 1.2, opacity: .55, dashArray: "3 5", interactive: false };
+      lineCount++;
+      groups.lines.addLayer(L.polyline(pts, opts));
+      var maxLon = Math.max.apply(null, pts.map(function (p) { return p[1]; })), minLon = Math.min.apply(null, pts.map(function (p) { return p[1]; }));
+      if (maxLon > 180) groups.lines.addLayer(L.polyline(pts.map(function (p) { return [p[0], p[1] - 360]; }), opts));
+      if (minLon < -180) groups.lines.addLayer(L.polyline(pts.map(function (p) { return [p[0], p[1] + 360]; }), opts));
+    });
+  });
+  // Leaflet paths need a real colour, not a CSS variable, in older browsers; resolve it at draw time.
+  function resolveLineColor() {
+    var c = getComputedStyle(root).getPropertyValue("--line").trim() || "#2b2b2b";
+    groups.lines.eachLayer(function (l) { l.setStyle({ color: c }); });
+  }
+  resolveLineColor();
+  var themeObserver = new MutationObserver(resolveLineColor); themeObserver.observe(root, { attributes: true, attributeFilter: ["data-theme"] });
+
+  /* ---------- counts and stats ---------- */
+  var counts = {}; SITES.forEach(function (s) { counts[s.layer] = (counts[s.layer] || 0) + 1; });
+  Object.keys(counts).forEach(function (k) { document.getElementById("count-" + k).textContent = counts[k]; });
+  document.getElementById("count-lines").textContent = lineCount;
+  var countries = {}; SITES.forEach(function (s) { countries[s.place.split(",").pop().trim().replace(/^Northern /, "")] = 1; });
+  var nSources = SITES.reduce(function (a, s) { return a + s.sources.length; }, 0);
+  document.getElementById("stats").innerHTML = "<b>" + SITES.length + "</b> places · <b>" + Object.keys(countries).length + "</b> countries · <b>" + nSources + "</b> sources · <b>" + lineCount + "</b> documented company links";
+
+  /* ---------- views ---------- */
+  var VIEWS = {
+    industry: {
+      layers: { mining: false, datacenter: true, labor: false, hq: true, lines: false },
+      size: { hq: 26, datacenter: 11 },
+      note: "This is roughly the map in a keynote or an annual report: five headquarters and the data centres that make up 'the cloud'. No mines, no moderators, no water. Nothing on it is false. It is just drawn from the top."
+    },
+    counter: {
+      layers: { mining: true, datacenter: true, labor: true, hq: true, lines: true },
+      size: { hq: 10, mining: 16, labor: 16, datacenter: 14 },
+      note: "Same world, drawn from the bill. The headquarters shrink to reference dots; the salt flats, the water-stressed towns and the labelling offices get the weight. Dashed lines run to whichever headquarters the sources name. Click any pin for the number and the source."
+    },
+    all: {
+      layers: { mining: true, datacenter: true, labor: true, hq: true, lines: true },
+      size: { hq: 14, mining: 14, labor: 14, datacenter: 14 },
+      note: "Every layer at the same size, for comparison. Even here the five headquarters cluster within one corner of one country while the rest spreads across " + Object.keys(countries).length + "."
+    }
+  };
+  var currentView = null;
+  function setSizes(sizeMap) {
+    SITES.forEach(function (s) {
+      var size = sizeMap[s.layer] || 14;
+      var dim = currentView === "counter" && s.layer === "hq";
+      markers[s.id].setIcon(makeIcon(s, size, dim));
+    });
+    updateHqLabels();
+  }
+  function setLayer(key, on) {
+    var cb = document.querySelector('input[data-layer="' + key + '"]');
+    if (cb) cb.checked = on;
+    if (on) { if (!map.hasLayer(groups[key])) groups[key].addTo(map); } else { if (map.hasLayer(groups[key])) map.removeLayer(groups[key]); }
+  }
+  function applyView(name, flyTo) {
+    var v = VIEWS[name]; if (!v) return;
+    currentView = name;
+    Object.keys(v.layers).forEach(function (k) { setLayer(k, v.layers[k]); });
+    setSizes(v.size);
+    // lines sit under the markers
+    if (map.hasLayer(groups.lines)) { groups.lines.eachLayer(function (l) { if (l.bringToBack) l.bringToBack(); }); }
+    document.querySelectorAll(".view-btn").forEach(function (b) { b.setAttribute("aria-pressed", b.getAttribute("data-view") === name ? "true" : "false"); });
+    document.getElementById("viewNote").textContent = v.note;
+    map.closePopup();
+    if (flyTo) {
+      if (name === "industry") {
+        var b = L.latLngBounds(SITES.filter(function (s) { return s.layer === "hq" || s.layer === "datacenter"; }).map(function (s) { return [s.lat, s.lon]; }));
+        map.flyToBounds(b, { paddingTopLeft: [120, 40], paddingBottomRight: [56, 40], animate: !reduceMotion, duration: 0.9 });
+      } else {
+        fitAll(!reduceMotion);
+      }
+    }
+  }
+  function fitAll(animate) {
+    var b = L.latLngBounds(SITES.map(function (s) { return [s.lat, s.lon]; }));
+    var pad = { paddingTopLeft: [48, 28], paddingBottomRight: [56, 28] };
+    if (animate) map.flyToBounds(b, Object.assign({ duration: 0.9 }, pad)); else map.fitBounds(b, Object.assign({ animate: false }, pad));
+  }
+  document.querySelectorAll(".view-btn").forEach(function (b) {
+    b.addEventListener("click", function () { applyView(b.getAttribute("data-view"), true); });
+  });
+  document.querySelectorAll('input[data-layer]').forEach(function (cb) {
+    cb.addEventListener("change", function () {
+      setLayer(cb.getAttribute("data-layer"), cb.checked);
+      document.querySelectorAll(".view-btn").forEach(function (b) { b.setAttribute("aria-pressed", "false"); });
+      document.getElementById("viewNote").textContent = "Custom layer mix. Pick a view to reset.";
+    });
+  });
+
+  /* ---------- browse list ---------- */
+  var list = document.getElementById("placeList");
+  ["mining", "datacenter", "labor", "hq"].forEach(function (layer) {
+    var h = document.createElement("h3"); h.innerHTML = '<span class="swatch ' + layer + '" aria-hidden="true"></span>' + LAYER_NAMES[layer]; list.appendChild(h);
+    SITES.filter(function (s) { return s.layer === layer; }).forEach(function (s) {
+      var btn = document.createElement("button"); btn.type = "button"; btn.setAttribute("role", "listitem");
+      btn.innerHTML = "<span>" + esc(s.name) + "</span><span>" + esc(s.number) + "</span>";
+      btn.addEventListener("click", function () {
+        setLayer(layer, true);
+        var m = markers[s.id];
+        var target = Math.max(map.getZoom(), 4);
+        if (window.innerWidth <= 1000) collapsePanel(true);
+        goTo(m.getLatLng(), target, function () { m.openPopup(); });
+      });
+      list.appendChild(btn);
+    });
+  });
+
+  /* ---------- mobile panel ---------- */
+  var panel = document.getElementById("panel"), toggle = document.getElementById("panelToggle");
+  function collapsePanel(collapsed) {
+    panel.classList.toggle("collapsed", collapsed);
+    toggle.textContent = collapsed ? "More" : "Less";
+    toggle.setAttribute("aria-expanded", collapsed ? "false" : "true");
+    setTimeout(function () { map.invalidateSize(); }, 220);
+  }
+  toggle.addEventListener("click", function () { collapsePanel(!panel.classList.contains("collapsed")); });
+  if (window.innerWidth <= 1000) collapsePanel(true);
+  window.addEventListener("resize", function () {
+    map.invalidateSize();
+    SITES.forEach(function (s) { var p = markers[s.id].getPopup(); if (p) { p.options.maxWidth = popupWidth(); p.options.minWidth = Math.min(260, popupWidth()); } });
+  });
+
+  /* ---------- start ---------- */
+  Object.keys(groups).forEach(function (k) { groups[k].addTo(map); });
+  applyView("counter", false);
+  fitAll(false);
+  map.on("popupopen", function (e) {
+    // open popups should be readable: close the tooltip under them
+    if (e.popup._source && e.popup._source.closeTooltip) e.popup._source.closeTooltip();
+  });
+})();
+</script>
+</body>
+</html>
