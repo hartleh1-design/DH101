@@ -104,6 +104,4 @@ Every claim on a pin comes from the sources listed on that pin. The same list, b
 
 ## AI Use
 
-Perplexity Computer (Claude) did most of the labour in this make, and this page is where I say so. I gave it the assignment and asked it to complete the make. It ran the searches, read about 70 sources and pulled out the numbers, names and quotes; checked the coordinates against Wikipedia; proposed the three layers, the "one number, one person, one source" rule for each pin, the two switchable views and the rule that a money line only appears where a source names the company; wrote the map code; tested it at desktop and phone sizes and took the screenshots; and turned the research and those decisions into a first draft of this text, which I edited. No images were AI-generated. Every number on the map links to where it came from, so anyone can check its work, which is also how I checked it.
-
 Full log: [pages/ai-log/2026-10-14-make6-map.md](../pages/ai-log/2026-10-14-make6-map.md).
