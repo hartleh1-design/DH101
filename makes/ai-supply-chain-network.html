@@ -1,0 +1,304 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Who Feeds the Model: a network of the AI supply chain</title>
+<meta name="description" content="Interactive network of 30 mines, refiners, chipmakers, data centres, labour contractors and AI companies, with a source for every connection.">
+<style>
+  :root{
+    --bg:#f6f3ee; --panel:#fffdf9; --ink:#1f1a14; --muted:#5a524a; --rule:#d8d0c4; --focus:#1a4fd6;
+    --material:#9a4414; --hardware:#136b66; --compute:#1f4f9e; --labour:#6a2f7a; --capital:#1f1a14;
+    --t-extraction:#c76a2e; --t-processing:#d9a441; --t-hardware:#2f9a93; --t-compute:#4d7fd1; --t-labour:#9b5fb0; --t-company:#1f1a14;
+  }
+  @media (prefers-color-scheme: dark){
+    :root{
+      --bg:#16130f; --panel:#201c17; --ink:#f1ebe2; --muted:#bfb4a6; --rule:#3d362e; --focus:#8fb3ff;
+      --material:#e0834a; --hardware:#53c2ba; --compute:#8ab0f2; --labour:#c893d8; --capital:#f1ebe2;
+      --t-company:#f1ebe2;
+    }
+  }
+  *{box-sizing:border-box}
+  html,body{margin:0;height:100%}
+  body{font-family:system-ui,-apple-system,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;background:var(--bg);color:var(--ink);line-height:1.45;font-size:15px}
+  a{color:var(--focus)}
+  .app{display:grid;grid-template-columns:minmax(0,1fr) 340px;grid-template-rows:auto minmax(0,1fr);height:100%;min-height:560px}
+  header{grid-column:1/-1;display:flex;flex-wrap:wrap;gap:.6rem 1rem;align-items:center;padding:.7rem 1rem;border-bottom:1px solid var(--rule);background:var(--panel)}
+  header h1{font-size:1.1rem;margin:0 .5rem 0 0;font-weight:650}
+  .views{display:flex;gap:.35rem;flex-wrap:wrap}
+  .views button{font:inherit;font-size:.9rem;padding:.35rem .7rem;border-radius:999px;border:1px solid var(--rule);background:transparent;color:var(--ink);cursor:pointer}
+  .views button[aria-pressed="true"]{background:var(--ink);color:var(--bg);border-color:var(--ink)}
+  .views button:focus-visible,.legend button:focus-visible,svg g.node:focus-visible circle,#close:focus-visible,#list a:focus-visible{outline:3px solid var(--focus);outline-offset:2px}
+  .legend{display:flex;flex-wrap:wrap;gap:.3rem .8rem;margin-left:auto;font-size:.82rem}
+  .legend button{font:inherit;font-size:.82rem;display:inline-flex;align-items:center;gap:.35rem;background:none;border:0;color:var(--ink);cursor:pointer;padding:.15rem .25rem;border-radius:4px}
+  .legend button[aria-pressed="false"]{opacity:.4;text-decoration:line-through}
+  .legend svg{width:34px;height:10px;overflow:visible}
+  .stage{position:relative;min-height:0}
+  svg.graph{width:100%;height:100%;display:block;touch-action:none}
+  .tierlabel{font-size:11px;fill:var(--muted);text-transform:uppercase;letter-spacing:.06em}
+  .tierline{stroke:var(--rule);stroke-dasharray:2 4}
+  path.link{fill:none;stroke-width:1.6;stroke-opacity:.85}
+  path.link.dim{stroke-opacity:.12}
+  path.link.contested{stroke-opacity:.6}
+  g.node{cursor:pointer}
+  g.node circle{stroke:var(--panel);stroke-width:1.5}
+  g.node.dim{opacity:.25}
+  g.node text{font-size:11.5px;fill:var(--ink);paint-order:stroke;stroke:var(--bg);stroke-width:3px;stroke-linejoin:round;pointer-events:none}
+  g.node.selected circle{stroke:var(--focus);stroke-width:3.5}
+  .hint{position:absolute;left:.8rem;bottom:.6rem;font-size:.78rem;color:var(--muted);background:var(--panel);padding:.25rem .5rem;border-radius:4px;border:1px solid var(--rule)}
+  aside{border-left:1px solid var(--rule);background:var(--panel);overflow:auto;padding:1rem}
+  aside h2{font-size:1.05rem;margin:0 0 .1rem}
+  aside .place{color:var(--muted);font-size:.85rem;margin:0 0 .6rem}
+  aside .stats{display:flex;gap:.6rem;flex-wrap:wrap;font-size:.8rem;margin:.5rem 0 .8rem}
+  aside .stats span{border:1px solid var(--rule);border-radius:4px;padding:.15rem .45rem}
+  aside ul{list-style:none;padding:0;margin:0}
+  aside li{border-top:1px solid var(--rule);padding:.6rem 0;font-size:.88rem}
+  aside li .rel{font-weight:600;display:flex;align-items:center;gap:.4rem}
+  aside li .swatch{width:22px;height:0;border-top:3px solid;display:inline-block}
+  aside li .fact{margin:.25rem 0}
+  aside li .src{font-size:.8rem}
+  .tag{display:inline-block;font-size:.72rem;border:1px solid currentColor;border-radius:3px;padding:0 .3rem;margin-left:.3rem;color:var(--material)}
+  #close{float:right;font:inherit;background:none;border:1px solid var(--rule);border-radius:4px;color:var(--ink);cursor:pointer;padding:.1rem .5rem}
+  .intro p{margin:.4rem 0;font-size:.9rem}
+  .sr-only{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
+  #list summary{cursor:pointer;font-weight:600;margin-top:.8rem}
+  #list ol{padding-left:1.2rem;font-size:.85rem}
+  #list li{margin:.3rem 0}
+  @media (max-width: 820px){
+    .app{grid-template-columns:1fr;grid-template-rows:auto auto auto;height:auto}
+    .stage{overflow-x:auto;-webkit-overflow-scrolling:touch}
+    svg.graph{min-width:880px;height:560px}
+    .hint{position:static;display:block;margin:.4rem .6rem}
+    aside{border-left:0;border-top:1px solid var(--rule);max-height:none}
+    .legend{margin-left:0}
+  }
+</style>
+</head>
+<body>
+<div class="app">
+  <header>
+    <h1>Who Feeds the Model</h1>
+    <div class="views" role="group" aria-label="Choose a layout">
+      <button id="v-chain" aria-pressed="true">Chain view</button>
+      <button id="v-hub" aria-pressed="false">Hub view (how the industry draws it)</button>
+    </div>
+    <div class="legend" id="legend" role="group" aria-label="Edge types. Toggle to show or hide."></div>
+  </header>
+
+  <div class="stage">
+    <svg class="graph" id="graph" role="img" aria-labelledby="graph-title graph-desc">
+      <title id="graph-title">Network of the AI supply chain: 30 nodes and 40 sourced connections</title>
+      <desc id="graph-desc">Nodes are arranged left to right in six tiers: mines and salt flats, refiners and traders, chips and machines, data centres and fabs, labelling and moderation firms, and AI companies. Lines show who supplies material, hardware, compute or labour to whom, and who owns or invests in whom. Node size shows the number of connections. A full text list of every connection follows the graph.</desc>
+    </svg>
+    <div class="hint" aria-hidden="true">Click or Tab to a node for its connections and sources. Drag to rearrange.</div>
+  </div>
+
+  <aside id="panel" aria-live="polite">
+    <div class="intro" id="intro">
+      <h2>Thirty places and companies, forty connections</h2>
+      <p>Every line on this graph exists because a named source says the two ends are connected: a contract, a shipment, a permit, a payslip, a stake. Where no source names both ends, there is no line, even when everyone knows the connection must exist.</p>
+      <p>In the <strong>chain view</strong>, material, hardware, compute and labour flow left to right into the AI companies. Only money (the dash-dot lines) flows the other way. In the <strong>hub view</strong>, the same forty rows are redrawn with the companies in the middle, the way an industry diagram would.</p>
+      <p>Node size is the number of connections. Select a node to see each connection and the source behind it.</p>
+    </div>
+    <div id="detail" hidden></div>
+    <details id="list">
+      <summary>Text list of all 40 connections</summary>
+      <ol id="edgelist"></ol>
+    </details>
+  </aside>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/d3@7/dist/d3.min.js"></script>
+<script src="../assets/data/ai-supply-chain.js"></script>
+<script>
+(function(){
+  const D = window.SUPPLY_CHAIN;
+  const svg = d3.select('#graph');
+  const css = getComputedStyle(document.documentElement);
+  const typeColor = t => css.getPropertyValue('--' + t).trim();
+  const tierColor = t => css.getPropertyValue('--t-' + t).trim();
+  const SHORT = {extraction:'Mines & salt flats', processing:'Refiners & traders', hardware:'Chips & machines', compute:'Data centres & fabs', labour:'Labour firms', company:'AI companies'};
+  const tierIndex = Object.fromEntries(D.tiers.map((t,i)=>[t.id,i]));
+  const nodes = D.nodes.map(n => Object.assign({}, n));
+  const byId = Object.fromEntries(nodes.map(n=>[n.id,n]));
+  const links = D.edges.map((e,i) => Object.assign({}, e, {id:'e'+i, source: byId[e.source], target: byId[e.target]}));
+  const pairCount = {};
+  links.forEach(l => { const k=[l.source.id,l.target.id].sort().join('|'); pairCount[k]=(pairCount[k]||0)+1; l.pairKey=k; });
+  const pairSeen = {};
+  links.forEach(l => { const n=pairCount[l.pairKey]; const i=(pairSeen[l.pairKey]=(pairSeen[l.pairKey]||0)+1); l.offset = n>1 ? (i-(n+1)/2)*8 : 0; });
+  const nbrs = {}; nodes.forEach(n=>nbrs[n.id]=[]);
+  links.forEach(l=>{ nbrs[l.source.id].push(l.target); nbrs[l.target.id].push(l.source); });
+
+  const activeTypes = new Set(Object.keys(D.types));
+  let view = 'chain', selected = null, W = 900, H = 600;
+
+  // ---- legend
+  const legend = d3.select('#legend');
+  Object.entries(D.types).forEach(([k,t]) => {
+    const b = legend.append('button').attr('aria-pressed','true').attr('data-type',k)
+      .on('click', function(){ if(activeTypes.has(k)) activeTypes.delete(k); else activeTypes.add(k); this.setAttribute('aria-pressed', activeTypes.has(k)); refresh(); });
+    b.append('svg').attr('viewBox','0 0 34 10').attr('aria-hidden','true').append('line')
+      .attr('x1',0).attr('y1',5).attr('x2',34).attr('y2',5).attr('stroke',typeColor(k)).attr('stroke-width',3).attr('stroke-dasharray',t.dash||null);
+    b.append('span').text(t.label);
+  });
+
+  const defs = svg.append('defs');
+  Object.keys(D.types).forEach(k => {
+    defs.append('marker').attr('id','arrow-'+k).attr('viewBox','0 -4 8 8').attr('refX',8).attr('refY',0)
+      .attr('markerWidth',7).attr('markerHeight',7).attr('orient','auto')
+      .append('path').attr('d','M0,-4L8,0L0,4Z').attr('fill',typeColor(k));
+  });
+  const gTiers = svg.append('g'), gLinks = svg.append('g'), gNodes = svg.append('g');
+
+  const linkSel = gLinks.selectAll('path').data(links, d=>d.id).join('path')
+    .attr('class', d=>'link '+(d.contested?'contested':''))
+    .attr('stroke', d=>typeColor(d.type))
+    .attr('stroke-dasharray', d=>D.types[d.type].dash || null)
+    .attr('marker-end', d=>`url(#arrow-${d.type})`);
+  linkSel.append('title').text(d=>`${d.source.label} → ${d.target.label}: ${D.types[d.type].label}${d.contested?' (contested)':''}`);
+
+  const node = gNodes.selectAll('g').data(nodes, d=>d.id).join('g')
+    .attr('class','node').attr('tabindex',0).attr('role','button')
+    .attr('aria-label', d=>`${d.label}, ${D.tiers[tierIndex[d.tier]].label}, ${d.degree} connection${d.degree===1?'':'s'}`)
+    .on('click', (ev,d)=>select(d))
+    .on('keydown', (ev,d)=>{ if(ev.key==='Enter'||ev.key===' '){ ev.preventDefault(); select(d);} })
+    .call(d3.drag().on('drag',(ev,d)=>{ d.x=ev.x; d.y=ev.y; render(); }));
+  node.append('circle').attr('fill', d=>tierColor(d.tier));
+  node.append('text');
+
+  function radius(d){
+    if(view==='hub') return d.tier==='company' ? 30 : 7;
+    return 7 + d.degree*2.3;
+  }
+  function wrap(label, max){
+    const words = label.split(' '), lines = []; let cur = '';
+    words.forEach(w=>{ if((cur+' '+w).trim().length > max && cur){ lines.push(cur); cur = w; } else cur = (cur+' '+w).trim(); });
+    if(cur) lines.push(cur); return lines;
+  }
+  function setLabels(){
+    node.select('text').each(function(d){
+      const t = d3.select(this); t.selectAll('*').remove();
+      const hub = view==='hub', ring = hub && d.tier!=='company';
+      const lines = hub ? (ring ? wrap(d.label, 16) : wrap(d.label, 11)) : wrap(d.label, 18);
+      const r = radius(d), lh = 13;
+      t.style('fill', null).style('stroke', null);
+      if(hub && d.tier==='company'){
+        t.attr('text-anchor','middle').style('fill','var(--bg)').style('stroke','none');
+        lines.forEach((ln,i)=> t.append('tspan').attr('x',0).attr('y', (i-(lines.length-1)/2)*lh + 4).text(ln));
+      } else if(ring){
+        const left = d.x < W/2;
+        t.attr('text-anchor', left ? 'end' : 'start');
+        lines.forEach((ln,i)=> t.append('tspan').attr('x', left ? -(r+5) : r+5).attr('y', (i-(lines.length-1)/2)*lh + 4).text(ln));
+      } else if(d.tier==='company'){
+        t.attr('text-anchor','start');
+        lines.forEach((ln,i)=> t.append('tspan').attr('x', r+5).attr('y', (i-(lines.length-1)/2)*lh + 4).text(ln));
+      } else {
+        // chain view: label centred above the node so arrows leaving to the right do not cross it
+        t.attr('text-anchor','middle');
+        lines.forEach((ln,i)=> t.append('tspan').attr('x',0).attr('y', -(r+7) - (lines.length-1-i)*lh).text(ln));
+      }
+    });
+  }
+
+  function layout(){
+    W = svg.node().clientWidth || 900; H = svg.node().clientHeight || 600;
+    gTiers.selectAll('*').remove();
+    if(view==='chain'){
+      const padL = 72, padR = 140, top = 64, bottom = 30;
+      const colW = (W - padL - padR) / (D.tiers.length - 1);
+      D.tiers.forEach((t,i)=>{
+        const x = padL + i*colW;
+        gTiers.append('line').attr('class','tierline').attr('x1',x).attr('x2',x).attr('y1',top-18).attr('y2',H-12);
+        gTiers.append('text').attr('class','tierlabel').attr('x',x-6).attr('y',28).attr('text-anchor','start').text(SHORT[t.id]);
+      });
+      // layered layout: order each column by the barycentre of neighbours (a few sweeps)
+      const cols = D.tiers.map(t => nodes.filter(n=>n.tier===t.id).sort((a,b)=>b.degree-a.degree));
+      const pos = {}; cols.forEach(c=>c.forEach((n,i)=>pos[n.id]=(i+0.5)/c.length));
+      for(let s=0;s<6;s++){
+        cols.forEach(c=>{
+          c.forEach(n=>{ const nb=nbrs[n.id]; n._b = nb.length ? d3.mean(nb, m=>pos[m.id]) : pos[n.id]; });
+          c.sort((a,b)=>a._b-b._b || b.degree-a.degree);
+          c.forEach((n,i)=>pos[n.id]=(i+0.5)/c.length);
+        });
+      }
+      cols.forEach((c,ci)=>c.forEach((n,i)=>{ n.x = padL + ci*colW; n.y = top + (H-top-bottom)*(i+0.5)/c.length; }));
+    } else {
+      const cx = W/2, cy = H/2 + 12, Rx = Math.min(W/2 - 180, 520), Ry = H/2 - 80, r0 = Math.min(W,H)/5.2;
+      const companies = nodes.filter(n=>n.tier==='company');
+      const others = nodes.filter(n=>n.tier!=='company').sort((a,b)=>tierIndex[a.tier]-tierIndex[b.tier] || a.label.localeCompare(b.label));
+      companies.forEach((n,i)=>{ const a = -Math.PI/2 + i*2*Math.PI/companies.length; n.x = cx + r0*Math.cos(a); n.y = cy + r0*Math.sin(a); });
+      others.forEach((n,i)=>{ const a = -Math.PI/2 + (i+0.5)*2*Math.PI/others.length; n.x = cx + Rx*Math.cos(a); n.y = cy + Ry*Math.sin(a); });
+      gTiers.append('text').attr('class','tierlabel').attr('x',14).attr('y',28).text('Hub view: companies large and central, everything that feeds them small, in a ring. Same 40 rows.');
+    }
+    node.select('circle').attr('r', radius);
+    setLabels();
+    render();
+  }
+
+  function render(){
+    linkSel.each(function(d){
+      const dx = d.target.x - d.source.x, dy = d.target.y - d.source.y, len = Math.hypot(dx,dy) || 1;
+      const nx = -dy/len, ny = dx/len;
+      const rs = radius(d.source) + 1, rt = radius(d.target) + 3;
+      const x1 = d.source.x + dx/len*rs + nx*d.offset, y1 = d.source.y + dy/len*rs + ny*d.offset;
+      const x2 = d.target.x - dx/len*rt + nx*d.offset, y2 = d.target.y - dy/len*rt + ny*d.offset;
+      // edges that jump more than one tier in the chain view bow outward so they do not pass through nodes in between
+      const span = view==='chain' ? Math.abs(tierIndex[d.target.tier]-tierIndex[d.source.tier]) : 0;
+      if(span >= 2){
+        const mid = (d.source.y + d.target.y)/2, dir = mid < H/2 ? -1 : 1, bow = dir * span * 26;
+        const cx = (x1+x2)/2 + nx*bow*Math.sign(ny||1), cy = (y1+y2)/2 + Math.abs(ny)*bow + (1-Math.abs(ny))*bow;
+        d3.select(this).attr('d', `M${x1},${y1} Q${(x1+x2)/2},${(y1+y2)/2 + bow} ${x2},${y2}`);
+      } else {
+        d3.select(this).attr('d', `M${x1},${y1} L${x2},${y2}`);
+      }
+    });
+    node.attr('transform', d=>`translate(${d.x},${d.y})`);
+  }
+
+  function refresh(){
+    linkSel.attr('display', d=>activeTypes.has(d.type)?null:'none');
+    if(selected){
+      const nb = new Set([selected.id]);
+      links.forEach(l=>{ if(activeTypes.has(l.type) && (l.source.id===selected.id||l.target.id===selected.id)){ nb.add(l.source.id); nb.add(l.target.id);} });
+      node.classed('dim', d=>!nb.has(d.id)).classed('selected', d=>d.id===selected.id);
+      linkSel.classed('dim', l=>!(l.source.id===selected.id||l.target.id===selected.id));
+    } else { node.classed('dim',false).classed('selected',false); linkSel.classed('dim',false); }
+  }
+
+  function select(d){
+    selected = (selected && selected.id===d.id) ? null : d;
+    refresh();
+    const intro = document.getElementById('intro'), det = document.getElementById('detail');
+    if(!selected){ intro.hidden=false; det.hidden=true; det.innerHTML=''; return; }
+    intro.hidden=true; det.hidden=false;
+    const mine = links.filter(l=>l.source.id===d.id||l.target.id===d.id);
+    const rows = mine.map(l=>{
+      const out = l.source.id===d.id; const other = out ? l.target : l.source; const t = D.types[l.type];
+      return `<li><div class="rel"><span class="swatch" style="border-color:${typeColor(l.type)};border-top-style:${t.dash?'dashed':'solid'}"></span>${t.label} ${out?'→':'←'} ${other.label}${l.contested?'<span class="tag">contested</span>':''}</div>
+        <p class="fact">${l.fact}</p><div class="src">Source: <a href="${l.source_url}" target="_blank" rel="noopener">${l.source_label}</a></div></li>`;
+    }).join('');
+    det.innerHTML = `<button id="close" aria-label="Close details">×</button>
+      <h2>${d.label}</h2><p class="place">${d.place} · ${D.tiers[tierIndex[d.tier]].label}</p>
+      <p>${d.note}</p>
+      <div class="stats"><span>${d.degree} connection${d.degree===1?'':'s'}</span><span>${d.in_degree} in · ${d.out_degree} out</span><span>betweenness ${d.betweenness.toFixed(2)}</span></div>
+      <ul>${rows}</ul>`;
+    document.getElementById('close').onclick = ()=>select(d);
+    det.querySelector('h2').setAttribute('tabindex','-1'); det.querySelector('h2').focus({preventScroll:true});
+  }
+
+  const ol = document.getElementById('edgelist');
+  links.forEach(l=>{
+    const li=document.createElement('li');
+    li.innerHTML = `<strong>${l.source.label}</strong> ${D.types[l.type].label.toLowerCase()} <strong>${l.target.label}</strong>${l.contested?' (contested)':''}. ${l.fact} <a href="${l.source_url}" target="_blank" rel="noopener">${l.source_label}</a>`;
+    ol.appendChild(li);
+  });
+
+  document.getElementById('v-chain').onclick = ()=>setView('chain');
+  document.getElementById('v-hub').onclick = ()=>setView('hub');
+  function setView(v){ view=v; document.getElementById('v-chain').setAttribute('aria-pressed', v==='chain'); document.getElementById('v-hub').setAttribute('aria-pressed', v==='hub'); layout(); refresh(); }
+  let rt; window.addEventListener('resize', ()=>{ clearTimeout(rt); rt=setTimeout(layout,150); });
+  layout(); refresh();
+})();
+</script>
+</body>
+</html>

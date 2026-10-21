@@ -1,0 +1,31 @@
+id,label,tier,place,note,degree,in_degree,out_degree,betweenness
+kolwezi,Kolwezi cobalt mines,extraction,"Lualaba, DR Congo","DR Congo supplied about 73% of the world's mined cobalt in 2025; at Kamilombe about 11,000 people dig it by hand.",3,1,2,0.057
+atacama,Salar de Atacama,extraction,"Antofagasta, Chile","Lithium brine pumped at 1,280 litres per second by SQM's own figures; Lickanantay communities report dried wells.",1,0,1,0.0
+bayanobo,Bayan Obo,extraction,"Inner Mongolia, China","The world's largest rare-earth mine; about 2,000 tonnes of toxic waste per tonne of rare earths.",1,0,1,0.0
+kachin,Kachin rare-earth mines,extraction,"Kachin State, Myanmar","2,700+ leaching pools counted by satellite in 2022; mined under militia control.",1,0,1,0.0
+glencore,Glencore (KCC),processing,"Baar, Switzerland / Kolwezi","Owns 70% of Kamoto Copper Company, a large copper and cobalt producer in Kolwezi.",2,1,1,0.0
+huayou,Huayou Cobalt / CDM,processing,"Zhejiang, China / Lubumbashi","Chinese refiner whose Congolese subsidiary CDM bought cobalt from artisanal traders, according to Amnesty.",2,1,1,0.108
+sqm,SQM,processing,"Santiago, Chile",One of two lithium producers on the Salar de Atacama; sells refined lithium to battery makers.,1,1,0,0.0
+cnrefiners,Chinese rare-earth refiners & magnet makers,processing,"Baotou and Ganzhou, China",China Northern Rare Earth (Baotou Steel) holds Bayan Obo; Kachin ore is exported to Chinese magnet manufacturers.,2,2,0,0.002
+asml,ASML,hardware,"Veldhoven, Netherlands","The only company that makes extreme-ultraviolet lithography machines, which every advanced chip needs.",1,0,1,0.0
+tsmc,TSMC,hardware,"Hsinchu, Taiwan / Phoenix",Fabricates Nvidia's GPUs and the custom AI chips of all five hyperscalers.,6,2,4,0.323
+skhynix,SK hynix,hardware,"Icheon, South Korea",Main supplier of the high-bandwidth memory stacked on Nvidia's AI processors.,1,0,1,0.0
+nvidia,Nvidia,hardware,"Santa Clara, California",Designs the GPUs almost every AI data centre on this graph runs on; also an investor in OpenAI.,8,2,6,0.474
+abilene,"Abilene, Texas (Stargate)",compute,"Abilene, Texas","First Stargate campus: 2.1 GW planned, on-site gas plants, built by Crusoe, owned by Oracle, used by OpenAI.",3,1,2,0.009
+memphis,Memphis (Colossus / Boxtown),compute,"Memphis, Tennessee","xAI's Colossus, built in 122 days with 35 gas turbines photographed before any permit, two miles from Boxtown.",2,1,1,0.0
+newcarlisle,"New Carlisle, Indiana (Rainier)",compute,"St. Joseph County, Indiana",Amazon's $11 billion campus built exclusively for Anthropic's Claude; 2.2 GW expected demand.,2,1,1,0.0
+iowa,"West Des Moines, Iowa",compute,"West Des Moines, Iowa",Microsoft's cluster where GPT-4 was trained; 11.5 million gallons of water in July 2022.,2,1,1,0.0
+dalles,"The Dalles, Oregon",compute,"The Dalles, Oregon",Google's data centres use about a third of the city's water; the city fought for 13 months to keep the figure secret.,2,1,1,0.0
+phoenix,"Phoenix, Arizona (TSMC fab)",compute,"Phoenix, Arizona",TSMC's first Arizona fab uses about 1.7 billion gallons of water a year; expansion could make it the city's largest water customer.,2,1,1,0.0
+sama,Sama,labour,"Nairobi, Kenya / Kampala, Uganda",Labelled toxic text for OpenAI and moderated Facebook for Meta; workers took home under $2 an hour.,2,0,2,0.006
+teleperformance,Teleperformance / Majorel,labour,"Accra, Ghana",Runs Meta's East African moderation from an unmarked Accra office; base pay about $80 a month.,1,0,1,0.0
+genpact,Genpact,labour,"Hyderabad, India","Ran a 1,600-person Facebook content-review unit; 2,000 posts per eight-hour shift on busy days.",1,0,1,0.0
+scaleai,Scale AI / Remotasks,labour,San Francisco / Lagos / Caracas,"Data-labelling platform whose Remotasks workers in Nigeria, Kenya and Venezuela were cut off without explanation in 2024.",2,1,1,0.006
+openai,OpenAI,company,San Francisco,Maker of ChatGPT.,7,7,0,0.101
+anthropic,Anthropic,company,San Francisco,"Maker of Claude, the model that helped build this page.",3,3,0,0.007
+google,Google / Alphabet,company,Mountain View,Maker of Gemini; owns 14% of Anthropic.,4,2,2,0.081
+meta,Meta,company,Menlo Park,"Maker of Llama; buys moderation from Sama, Teleperformance and Genpact.",5,4,1,0.143
+microsoft,Microsoft,company,Redmond,OpenAI's main investor and cloud; the biggest buyer of Nvidia chips in 2024.,5,3,2,0.186
+amazon,Amazon (AWS),company,Seattle,Anthropic's main investor and training partner.,3,1,2,0.074
+xai,xAI,company,Palo Alto / Memphis,Maker of Grok; runs Colossus in Memphis.,3,2,1,0.057
+oracle,Oracle,company,Austin,Owns the Abilene Stargate campus and leases its computing power to OpenAI.,2,1,1,0.011
