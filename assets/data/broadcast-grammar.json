@@ -1,0 +1,18 @@
+{
+"origin":["#pregame#","#faceoff#","#goal#","#save#","#final#"],
+"pregame":["Tonight at #time#, #team# comes all the way down to #town# to match up against #team#."],
+"faceoff":["[thing:#object#]The #thing# is dropped and #team# wins the #thing# and takes possession."],
+"goal":["After #number# #shots# on #net# by #team#, they score."],
+"save":["The #teamPlayer# of #team# #action# the #object# away into the corner."],
+"final":["#team# beats #team# by #ratio#."],
+"time":["7:00 PM","7:30 PM","8PM","8:30 PM","9PM","9:30 PM"],
+"team":["Michigan","Ohio State","Minnesota Duluth","Wisconsin","Michigan State","Penn State"],
+"town":["Columbus","Ann Arbor","Madison","Notre Dame","Duluth","East Lansing"],
+"object":["puck","baseball","tennis ball","golf ball","frisby","cube"],
+"number":["4","8","13","15","18","21"],
+"shots":["wrist shots","slap shots","wrap-arounds","redirected shots","close-ranged shots","long-range shots"],
+"net":["Michigan's net","Ohio states net","Minnesota Duluth's net","Wisconsins net","Michigan States net","Penn States net"],
+"teamPlayer":["Right Defensemen","Left Defensemen","Center","Goaltender","Left wing","Right Wing"],
+"action":["punches","redirects","skims","stops","tips"],
+"ratio":["4:1","1:0","3:2","5:2","2:0","4:3","2:1"]
+}
