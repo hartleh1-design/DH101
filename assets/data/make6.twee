@@ -1,0 +1,105 @@
+:: StoryTitle
+Make 6
+
+:: StoryData
+{
+  "ifid": "4D2C1B5E-7A3F-4E9B-9C2D-1F0A8B7C6D5E",
+  "format": "Harlowe",
+  "format-version": "3.1.0",
+  "start": "Start",
+  "tag-colors": {"ending": "red"}
+}
+
+:: Clock {"position":"100,100","size":"100,100"}
+{(set: $h to (floor: $min / 60) + 6)
+(set: $m to $min % 60)
+(if: $h > 12)[(set: $h to it - 12)]
+(if: $m < 10)[(set: $mm to "0" + (str: $m))](else:)[(set: $mm to (str: $m))]
+(set: $clock to (str: $h) + ":" + $mm + " PM")}
+
+:: Start {"position":"100,400","size":"100,100"}
+(set: $you to 0)(set: $min to 30)(set: $ownidea to false)(set: $read to false)(set: $rewrote to false)(display: "Clock")<div class="clock">$clock</div>
+You are in the library. You have multiple things due by midnight. You are overwhelmed. You have practice tonight as well. DH Make 6 is due by midnight, and it's the last thing on the list. You grab an energy drink and eat some food. The agent window is already open and ready. You start screenshotting every piece of description from the assignment on Canvas. You import them in the agent window.
+
+[[Ask it to explain the make so you can build it yourself.->Brief yours]]
+[[Type "Complete Make 6."->Brief pasted]]
+
+:: Brief yours {"position":"350,250","size":"100,100"}
+(set: $you to it + 1)(set: $min to it + 75)(display: "Clock")<div class="clock">$clock</div>
+You start typing: “Give me a good understanding of the assignment and help me complete it with my hands.” After the agent gives you a more comprehensible guideline, you start the project.
+
+[[Continue->Idea]]
+
+:: Brief pasted {"position":"350,550","size":"100,100"}
+(set: $min to it + 10)(display: "Clock")<div class="clock">$clock</div>
+You start typing: “Complete Make 6.” The agent finishes the output within two minutes: the map, the write-up, the artist statement, the log. You have nothing left to do. You feel more relieved.
+
+[[Continue->Idea]]
+
+:: Idea {"position":"600,400","size":"100,100"}
+(display: "Clock")<div class="clock">$clock</div>
+The agent comes back after right under 2 minutes. You see a bunch of bullet points and recommendations on your screen.
+
+(link: "Take the agent's first concept.")[(set: $min to it + 10)(goto: "Build")]
+(link: "Write your own idea instead.")[(set: $you to it + 1)(set: $min to it + 75)(set: $ownidea to true)(goto: "Build")]
+|map)[
+[[Build]]
+]
+
+:: Build {"position":"850,400","size":"100,100"}
+(display: "Clock")<div class="clock">$clock</div>
+(if: $ownidea)[You close the agent's list and start your own map of the data centers going up around Columbus and New Albany. It takes you until 9 PM to find the first ten places. But every pin is there because you put it there.](else:)[“The Cloud has a body,” made by the agent, made you lose your work ethic. Your work ethic is supposed to be doing everything by hand and being transparent with yourself.]
+
+While the agent builds, you grab a granola bar from your backpack and start the other assignment that's due tonight. After four minutes, you come back to what the agent has to offer: a finished page and the map of data centers.
+
+(link: "Read the whole thing before it goes up.")[(set: $you to it + 1)(set: $min to it + 75)(set: $read to true)(goto: "Log")]
+(link: "Type \"push it as-is.\"")[(set: $min to it + 10)(goto: "Log")]
+|map)[
+[[Log]]
+]
+
+:: Log {"position":"1100,400","size":"100,100"}
+(display: "Clock")<div class="clock">$clock</div>
+(if: $read)[You read all 800 words. Half of it is good. None of it sounds like you, and one line keeps Anthropic on the map 'because the assistant runs on Claude,' which you never said. You start cutting.](else:)[You type “push it as-is.” It goes live under a commit number you never look at, with sentences you never read, and you go back to the other assignment. Somewhere in that page is a sentence about keeping Anthropic on the map 'because the assistant runs on Claude.' You didn't write it, and you won't see it until Monday.]
+
+The last thing the agent makes is the AI-use log, written as 'I': I asked the agent to complete the make; it researched, built, tested, and drafted everything, and I reviewed and approved it. It's honest. It's also the first thing on the page that admits what happened, and you didn't write that either. It asks if the log looks right.
+
+(link: "Keep the log it wrote.")[(set: $min to it + 10)(goto: "Monday")]
+(link: "Rewrite it yourself so it says what actually happened.")[(set: $you to it + 1)(set: $min to it + 75)(set: $rewrote to true)(goto: "Monday")]
+|map)[
+[[Monday]]
+]
+
+:: Monday {"position":"1350,400","size":"100,100"}
+(display: "Clock")(set: $submitted to $clock)(if: $you >= 3)[(goto: "Ending B")](else:)[(goto: "Ending A")]
+|map)[
+[[Ending A]]
+[[Ending B]]
+]
+
+:: Ending A [ending] {"position":"1600,250","size":"100,100"}
+<div class="clock">Monday</div>
+(if: $rewrote)[You rewrite it in your own words. It's shorter, it's rougher, and for the first time tonight the page has a sentence you'd be able to defend out loud.](else:)[You keep it. On Monday, Fran will thank you for your honesty, in a paragraph you didn't write.]
+
+Monday morning, you're at practice and in the locker room; the grade comes in: 10 out of 10. Then the comment. 'Outstanding,' he says. The log is transparent. And then: 'It's hard to see your own thinking in this.' He wants to talk. You feel guilty. You feel the 100% turned into something else rather than a grade itself.
+
+<div class="tally">Submitted Sunday at $submitted. Decisions that were yours: $you of 4.</div>
+[[Play again->Start]]
+
+:: Ending B [ending] {"position":"1600,550","size":"100,100"}
+<div class="clock">Monday</div>
+(if: $rewrote)[You rewrite it in your own words. It's shorter, it's rougher, and for the first time tonight the page has a sentence you'd be able to defend out loud.](else:)[You keep it. On Monday, Fran will thank you for your honesty, in a paragraph you didn't write.]
+
+Monday morning, you're at practice in the locker room when the grade comes in. 9 out of 10, or 10; it doesn't matter as much as it did. Then the comment: 'Ryan, this one is smaller and rougher: ten pins, one view, a write-up with some bumps in it. Your log says exactly what you did and what the agent did. I can see your thinking in every pin, and I know which decisions were yours without asking. Let's talk about how to polish it.' Last night cost you three hours of focused practice, and you turned in the other assignment late at 11:30 PM with your eyes burning.
+
+<div class="tally">Submitted Sunday at $submitted. Decisions that were yours: $you of 4.</div>
+[[Play again->Start]]
+
+:: Story Stylesheet [stylesheet]
+tw-story { background: #0e0f12; color: #e8e8e8; font-family: Georgia, "Times New Roman", serif; font-size: 1.25em; line-height: 1.6; padding: 3em 10%; }
+tw-passage { max-width: 36em; margin: 0 auto; }
+tw-story tw-link, tw-story .enchantment-link, tw-story tw-link:visited { color: #ffd166 !important; border-bottom: 1px solid #ffd16655; text-decoration: none; }
+tw-story tw-link:hover, tw-story .enchantment-link:hover { color: #fff !important; border-color: #fff; }
+.clock { font-family: "Courier New", monospace; font-size: 0.8em; letter-spacing: 0.15em; color: #9aa0a6; margin-bottom: 1.5em; text-transform: uppercase; }
+.tally { font-family: "Courier New", monospace; font-size: 0.85em; color: #9aa0a6; margin-top: 2em; border-top: 1px solid #333; padding-top: 1em; }
+tw-sidebar { display: none; }
